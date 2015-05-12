@@ -10,28 +10,30 @@ class midiGenerator {
 	
 	public function getErrorMessage () {return $this->errorMessage;}
 	
-    public function generateMIDIHarmony ($array, $sceneChangeTimings) {
+    public function generateMIDIFile ($array, $sceneChangeTimings) {
     
-		# Transpose (optional)
+		# Transpose received array (optional)
 		foreach ($array as &$chord) {
 			foreach ($chord as &$note) {
 				$note = $note + 1;
 			}
 		}
+		
 		# Add Midi Header
 		$midiInstructions = array ();
 		$midiInstructions[] = 'MFile 0 1 500';
 		$midiInstructions[] = 'MTrk';
-		#$midiInstructions[] = '0 TimeSig 4/4 24 8';
-		#$midiInstructions[] = '0 Tempo 750000';
+		//$midiInstructions[] = '0 TimeSig 4/4 24 8';
+		//midiInstructions[] = '0 Tempo 750000';
 		$midiInstructions[] = '0 PrCh ch=1 p=53';
 		
 		# Add main track with chords
 		$midiTimeStamp = 0;
 		
-		# Get scene changes
+		# Set position in $sceneChangeTimings array
 		$cutSceneArrayPosition = 0;
 		
+		# Write each chord from $array with respective timing from $sceneChangeTimings
 		foreach ($array as $chord) { // Open each chord array which contains 4 notes
 			
 			foreach ($chord as $note) { //Add each note to an array, when 4 notes are in array, print out On and Off MIDI info
@@ -50,6 +52,7 @@ class midiGenerator {
 			foreach ($noteArray as $noteInNoteArray) {
 				$midiInstructions[] = "$midiTimeStamp Off ch=1 n=$noteInNoteArray v=60";   
 			}
+			
 			unset ($noteArray);
 			$cutSceneArrayPosition++;
 		}
@@ -69,11 +72,15 @@ class midiGenerator {
 		$midi->importTxt ($midiText);
 		$midi->saveMidFile ($file);
 		
-		# Signal success
+		# Return location of file
 		return $file;
 	}
 
-	
+	/*
+	 * Returns a unique filename in output directory
+	 *
+	 * @return str filepath
+	 */
 	private function createFileName () {
 		
 		# Check if directory is writable
