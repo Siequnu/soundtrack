@@ -141,8 +141,8 @@ class soundtrackGenerator {
 	 */
     public function getCutScenes () {
 		# Define command to be run		
-		$cmd = "/usr/local/bin/ffprobe -show_frames -of compact=p=0 -f lavfi \"movie=\"{$this->videoFilepath}\",select=gt(scene\,0.4)\" > \"{$this->outputDirectory}\"scene-changes.txt"; 
-        
+		$cmd = "/usr/local/bin/ffprobe -show_frames -of compact=p=0 -f lavfi \"movie={$this->videoFilepath},select=gt(scene\,0.4)\" > {$this->outputDirectory}scene-changes.txt"; 
+
 		# Execute command
         $exitStatus = $this->execCmd ($cmd);
 	
