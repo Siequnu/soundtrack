@@ -51,11 +51,10 @@ class soundtrackGenerator {
         $success = $this->mergeAudioWithVideo($pathToAudioFile);
 		if (!$success) {
 			echo "\n<p>The audio could not be merged with the video, due to the following error: <pre>".htmlspecialchars($this->getErrorMessage())."</pre></p>";
+		} else {
+			# Confirm file was created
+			echo "Soundtrack succesfully merged with video.";	
 		}
-		
-		# Confirm file was created
-        echo "Soundtrack succesfully merged with video.";
-        
     }
 	
 	
@@ -143,7 +142,7 @@ class soundtrackGenerator {
 	
 		# Handle errors
 		if ($exitStatus != 0) {
-            $this->errorMessage = 'The cut scenes could not be extracted due to an error with ffprobe';  
+            $this->errorMessage = 'The cut scenes could not be extracted due to an error with ffprobe.';  
             return false;
         }
 		
