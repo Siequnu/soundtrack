@@ -5,6 +5,7 @@ class soundtrackGenerator {
 	
 	private $videoFilepath;
 	private $audioFilepath;
+	private $outputDirectory;
 	private $outputFilepath;
 	
 			
@@ -102,7 +103,7 @@ class soundtrackGenerator {
 	}
 	
 	/*
-	 * Set class property outputFilepath
+	 * Set class property outputFilepath and outputDirectory
 	 *
 	 * @param str $outputFolder Path to output folder
 	 * @param str $outputFilepath Output filepath
@@ -112,6 +113,7 @@ class soundtrackGenerator {
 			$this->errorMessage = "Can't write to output directory.";
 			return false;
 		}
+		$this->outputDirectory = $outputFolder;
 		$this->outputFilepath = $outputFilepath;
 		return true;
 	}
@@ -138,13 +140,8 @@ class soundtrackGenerator {
 	 * @return array Array with timings
 	 */
     public function getCutScenes () {
-		# Set variables for location
-		$videoName = 'video.mp4';
-		$directory  = dirname ($_SERVER['SCRIPT_FILENAME']) . '/content/' . $videoName;
-        $outputDirectory = dirname ($_SERVER['SCRIPT_FILENAME']) . '/output/';
-			
 		# Define command to be run		
-		$cmd = "/usr/local/bin/ffprobe -show_frames -of compact=p=0 -f lavfi \"movie=\"{$directory}\",select=gt(scene\,0.4)\" > \"{$outputDirectory}\"scene-changes.txt"; 
+		$cmd = "/usr/local/bin/ffprobe -show_frames -of compact=p=0 -f lavfi \"movie=\"{$this->videoFilepath}\",select=gt(scene\,0.4)\" > \"{$this->outputDirectory}\"scene-changes.txt"; 
         
 		# Execute command
         $exitStatus = $this->execCmd ($cmd);
