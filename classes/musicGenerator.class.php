@@ -4,7 +4,7 @@ class musicGenerator {
     
     public function __construct () {
         
-        # Chords
+        # Possible chords, can be extended to any type of GM1 input
         $this->chordArray = array (
             '0'   => array ('36', '52', '55', '60'),
 			'1'   => array ('38', '53', '57', '60'),
@@ -13,6 +13,14 @@ class musicGenerator {
 		);    
     }
     
+	
+	/*
+	 * Generates a sequence of random chords
+	 *
+	 * @param int $numberOfChords Number of chords to generate
+	 *
+	 * @return array Array with chords and keyboard positions
+	 */
     public function generateMusic ($numberOfChords) {
         # Generate array with amount of chords necessary
         # This can connect to any music generation routine
