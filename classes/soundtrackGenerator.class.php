@@ -41,7 +41,7 @@ class soundtrackGenerator {
         $pathToMovieFile = dirname ($_SERVER['SCRIPT_FILENAME']) . '/content/video.mp4';
         $outputFilepath = dirname ($_SERVER['SCRIPT_FILENAME']) . '/output/finalvideo.avi';
 
-        $cmd = "/usr/local/bin/ffmpeg -i \"{$pathToMusicFile}\" -i \"{$pathToMovieFile}\" \"{$outputFilepath}\"";
+        $cmd = "/usr/local/bin/ffmpeg -y -i \"{$pathToMusicFile}\" -i \"{$pathToMovieFile}\" \"{$outputFilepath}\"";
         #echo $cmd;die;
         exec ($cmd, $output, $exitStatus);
         echo "<pre>Soundtrack succesfully merged with video.</pre>";
