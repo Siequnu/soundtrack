@@ -2,15 +2,17 @@
 
 class soundtrackGenerator {
     
+	
     public function __construct() {
         require_once './classes/midiGenerator.class.php';
         require_once './classes/musicGenerator.class.php';
     }
     
+	
 	public function getErrorMessage () {return $this->errorMessage;}
 	
-    public function getSoundtrack () { 
-        
+	
+    public function getSoundtrack () {  
 		# Extend time limit from default 30: ffmpeg takes a while for longer video files
         set_time_limit (120);
         
@@ -43,17 +45,14 @@ class soundtrackGenerator {
 			echo "\n<p>The MIDI file could not be created, due to the following error: <pre>".htmlspecialchars($this->getErrorMessage())."</pre></p>";
 		}
         
-        # Echo HTML5 tag with converted WAV file
-        #$pathToMusicFile = '/soundofcolour/output/' . pathinfo ($file, PATHINFO_FILENAME) . '.wav';
-        #echo $this->getAudioHTMLTag ($pathToMusicFile);
-        
-        # Merge generated audio with video
+        # Merge generated audio with video and display in browser
         $success = $this->mergeAudioWithVideo($pathToAudioFile);
 		if (!$success) {
 			echo "\n<p>The audio could not be merged with the video, due to the following error: <pre>".htmlspecialchars($this->getErrorMessage())."</pre></p>";
 		} else {
-			# Confirm file was created
-			echo "Soundtrack succesfully merged with video.";	
+			# Echo HTML5 tag with video file
+			$pathToVideoFile = '/soundtrack/output/finalvideo.mpg';
+			echo $this->getVideoHTMLTag ($pathToVideoFile);	
 		}
     }
 	
@@ -65,7 +64,7 @@ class soundtrackGenerator {
 		# Define paths
         $pathToMusicFile = dirname ($_SERVER['SCRIPT_FILENAME']) . '/output/' . pathinfo ($pathToAudioFile, PATHINFO_FILENAME) . '.wav';
         $pathToMovieFile = dirname ($_SERVER['SCRIPT_FILENAME']) . '/content/video.mp4';
-        $outputFilepath = dirname ($_SERVER['SCRIPT_FILENAME']) . '/output/finalvideo.avi';
+        $outputFilepath = dirname ($_SERVER['SCRIPT_FILENAME']) . '/output/finalvideo.mpg';
 
 		# Define command
         $cmd = "/usr/local/bin/ffmpeg -y -i \"{$pathToMusicFile}\" -i \"{$pathToMovieFile}\" \"{$outputFilepath}\"";
@@ -81,6 +80,7 @@ class soundtrackGenerator {
 		
 		return true;
 	}
+ 
  
     /*
      * Converts a MIDI file to WAV.
