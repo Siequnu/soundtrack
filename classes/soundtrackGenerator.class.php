@@ -189,40 +189,15 @@ class soundtrackGenerator {
 		# Remove last element (contains no timing information)
 		array_pop($explodedRows);
 				
-		# Parse timings line (from 'pkt_pts_time=2.080000' to '2080')
-		$sceneChangeTime = array ();
+		# Parse timings line (from 'pkt_pts_time=2.080000' to '2.080')
 		foreach ($explodedRows as $frame) {
-			$sceneChangeTime[] = $frame[3];
-		}
-		
-		foreach ($sceneChangeTime as $time) {
-			$timeWithHeader[] = explode('=', $time);
-		}
-				
-		foreach ($timeWithHeader as $time) {
-			$timeNoHeader[] = $time[1];
-		}
-		
-		foreach ($timeNoHeader as $time) {
-			$timeSplitDecimalPoint[] = explode ('.', $time);
-		}
-		
-		$finalFormattedTime = array ();
-		
-		# Join the values before and after the decimal point
-		foreach ($timeSplitDecimalPoint as $line) {
-				if (strlen ($line[0]) == 1) {
-					$joinedData = implode ($line);
-					$finalFormattedTime[] = substr ($joinedData, 0, 4);	
-				}
-				if (strlen ($line[0]) == 2) {
-					$joinedData = implode ($line);
-					$finalFormattedTime[] = substr ($joinedData, 0, 5);	
-				}
-				if (strlen ($line[0]) == 3) {
-					$joinedData = implode ($line);
-					$finalFormattedTime[] = substr ($joinedData, 0, 6);	
-				}
+			$sceneChangeTime = $frame[3];
+			$sceneChangeTime = explode('=', $sceneChangeTime); 
+			$sceneChangeTime = $sceneChangeTime[1]; // 2.080000
+			$timeSplitDecimalPoint = explode ('.', $sceneChangeTime);
+			$strLen = strlen ($timeSplitDecimalPoint[0]); // 2.08000 -> 2080; 19.8788 -> 19878
+			$joinedData = implode ($timeSplitDecimalPoint); // 2080
+			$finalFormattedTime[] = substr ($joinedData, 0, ($strLen + 3));
 		}
 		
 		return $finalFormattedTime;	
