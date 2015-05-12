@@ -12,10 +12,10 @@ class midiGenerator {
 	
     public function generateMIDIHarmony ($array, $sceneChangeTimings) {
     
-		# Transpose everything up 2 octaves
+		# Transpose (optional)
 		foreach ($array as &$chord) {
 			foreach ($chord as &$note) {
-				$note = $note + 24;
+				$note = $note + 1;
 			}
 		}
 		# Add Midi Header
@@ -24,7 +24,7 @@ class midiGenerator {
 		$midiInstructions[] = 'MTrk';
 		#$midiInstructions[] = '0 TimeSig 4/4 24 8';
 		#$midiInstructions[] = '0 Tempo 750000';
-		$midiInstructions[] = '0 PrCh ch=1 p=1';
+		$midiInstructions[] = '0 PrCh ch=1 p=53';
 		
 		# Add main track with chords
 		$midiTimeStamp = 0;
