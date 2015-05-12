@@ -100,6 +100,12 @@ class soundtrackGenerator {
         return $html;
     }
     
+	
+	/*
+	 * Generate an array with cutscene timings
+	 *
+	 * @return array Array with timings
+	 */
     public function getCutScenes () {
 		# Get cut scenes
 		$videoName = 'video.mp4';
@@ -145,7 +151,6 @@ class soundtrackGenerator {
 			$data[] = explode ('.', $time);
 		}
 		$finalFormattedTime = array ();
-		#print_r ($data);die;
 		foreach ($data as $line) {
 				if (strlen ($line[0]) == 1) {
 					$joinedData = implode ($line);
@@ -163,8 +168,20 @@ class soundtrackGenerator {
 		return $finalFormattedTime;
 	}
 	
+	
+	/*
+	 * Executes a command and returns an exit status
+	 *
+	 * @param str $cmd The command
+	 *
+	 * @return bool The exit status
+	 */
 	private function execCmd ($cmd) {
-		exec ($cmd, $output, $exitStatus);
+		if (substr(php_uname(), 0, 7) == "Windows"){ 
+			pclose(popen("start /B ". $cmd, "r"));  
+		} else { 
+        exec ($cmd, $output, $exitStatus);   
+		}		
 		return $exitStatus;
 	}
 	
