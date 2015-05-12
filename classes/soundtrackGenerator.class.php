@@ -7,13 +7,19 @@ class soundtrackGenerator {
         require_once './classes/musicGenerator.class.php';
     }
     
+	public function getErrorMessage () {return $this->errorMessage;}
+	
     public function getSoundtrack () { 
         
-        set_time_limit (90);
+        set_time_limit (120);
         
         # Get cutscene timings
         $sceneChangeTimings = $this->getCutScenes();
         
+		if (!$sceneChangeTimings)  {
+			echo "Cut scene creation failed, due to the following error: <pre>".htmlspecialchars($this->getErrorMessage())."</pre></p>"; die;
+		}
+		
         # Generate music for these cutscenes
         $this->musicGenerator = new musicGenerator;
         $numberOfTracks = count($sceneChangeTimings);
@@ -42,9 +48,16 @@ class soundtrackGenerator {
         $outputFilepath = dirname ($_SERVER['SCRIPT_FILENAME']) . '/output/finalvideo.avi';
 
         $cmd = "/usr/local/bin/ffmpeg -y -i \"{$pathToMusicFile}\" -i \"{$pathToMovieFile}\" \"{$outputFilepath}\"";
-        #echo $cmd;die;
-        exec ($cmd, $output, $exitStatus);
-        echo "<pre>Soundtrack succesfully merged with video.</pre>";
+        
+		$exitStatus = $this->execCmd ($cmd);
+		
+		if ($exitStatus != 0) {
+            $this->errorMessage = 'The video file could not be rendered, due to an error with ffmpeg.';
+			echo "\n<p>The MIDI file could not be created, due to the following error: <pre>".htmlspecialchars($this->getErrorMessage())."</pre></p>";
+            return false;
+        }
+		
+        echo "Soundtrack succesfully merged with video.";
         
     }
    
@@ -61,11 +74,11 @@ class soundtrackGenerator {
         # Convert MIDI file to WAV using timidity in shell
         $cmd = "/usr/local/bin/timidity -Ow \"{$file}\"";   
         
-        #echo $cmd;
-        exec ($cmd, $output, $exitStatus);
-        if ($exitStatus != 0) {
+		$exitStatus = $this->execCmd ($cmd);
+        
+		if ($exitStatus != 0) {
             #echo nl2br (htmlspecialchars (implode ("\n", $output)));
-            echo "\n<p><pre>The WAV file could not be created, due to an error with the converter.</pre></p>";  
+            $this->errorMessage = 'The WAV file could not be created, due to an error with the converter.';  
             return false;
         }
         return true;
@@ -92,12 +105,13 @@ class soundtrackGenerator {
 		$videoName = 'video.mp4';
 		$directory  = dirname ($_SERVER['SCRIPT_FILENAME']) . '/content/' . $videoName;
         $outputDirectory = dirname ($_SERVER['SCRIPT_FILENAME']) . '/output/';
-        $cmd = "/usr/local/bin/ffprobe -show_frames -of compact=p=0 -f lavfi \"movie=\"{$directory}\",select=gt(scene\,0.4)\" > \"{$outputDirectory}\"scene-changes.txt"; 
+				
+		$cmd = "/usr/local/bin/ffprobe -show_frames -of compact=p=0 -f lavfi \"movie=\"{$directory}\",select=gt(scene\,0.4)\" > \"{$outputDirectory}\"scene-changes.txt"; 
         
-        exec ($cmd, $output, $exitStatus);
+        $exitStatus = $this->execCmd ($cmd);
 	
 		if ($exitStatus != 0) {
-            echo "\n<p><pre>The cut scenes could not be extracted due to an error with ffprobe.</pre></p>";  
+            $this->errorMessage = 'The cut scenes could not be extracted due to an error with ffprobe';  
             return false;
         }
 		
@@ -120,7 +134,9 @@ class soundtrackGenerator {
 		foreach ($sceneChangeTime as $time) {
 			$data[] = explode('=', $time);
 		}
+		
 		unset ($sceneChangeTime);
+		
 		foreach ($data as $time) {
 			$sceneChangeTime[] = $time[1];
 		}
@@ -146,7 +162,12 @@ class soundtrackGenerator {
 		}
 		return $finalFormattedTime;
 	}
-    
+	
+	private function execCmd ($cmd) {
+		exec ($cmd, $output, $exitStatus);
+		return $exitStatus;
+	}
+	
 }
 
 ?>
