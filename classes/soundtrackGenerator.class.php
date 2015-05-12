@@ -3,6 +3,11 @@
 class soundtrackGenerator {
     
 	
+	private $videoFilepath;
+	private $audioFilepath;
+	private $outputFilepath;
+	
+			
     public function __construct() {
         require_once './classes/midiGenerator.class.php';
         require_once './classes/musicGenerator.class.php';
@@ -16,6 +21,11 @@ class soundtrackGenerator {
 		# Extend time limit from default 30: ffmpeg takes a while for longer video files
         set_time_limit (120);
         
+		# Set videoFilepath and check $outputFilepath is writeable.
+		if (!$this->setDefaultPaths()) {
+			echo "Script could not run, due to the following error: <pre>".htmlspecialchars($this->getErrorMessage())."</pre></p>";die;
+		}
+		
         # Get array with cutscene timings from video
         $sceneChangeTimings = $this->getCutScenes();
         
@@ -31,23 +41,21 @@ class soundtrackGenerator {
         
         # Send chord array and cutscene timings to MIDI Generator
         $this->midiGenerator = new midiGenerator;
-        $pathToAudioFile = $this->midiGenerator->generateMIDIFile ($sequenceOfChords, $sceneChangeTimings);
+        $pathToMIDIFile = $this->midiGenerator->generateMIDIFile ($sequenceOfChords, $sceneChangeTimings);
         
         # Deal with error messages
-        if (!$pathToAudioFile) {
+        if (!$pathToMIDIFile) {
             echo "\n<p>The MIDI file could not be created, due to the following error: <pre>".htmlspecialchars($this->midiGenerator->getErrorMessage())."</pre></p>";
             return false;
         } 
         
-        # Convert MIDI file to WAV
-        $success = $this->convertMIDIToWAV ($pathToAudioFile);
-		if (!$success) {
-			echo "\n<p>The MIDI file could not be created, due to the following error: <pre>".htmlspecialchars($this->getErrorMessage())."</pre></p>";
+        # Convert MIDI file to WAV and set $this->audioFilepath
+		if (!$this->convertMIDIToWAV ($pathToMIDIFile)) {
+			echo "\n<p>The audio file could not be created, due to the following error: <pre>".htmlspecialchars($this->getErrorMessage())."</pre></p>";
 		}
         
         # Merge generated audio with video and display in browser
-        $success = $this->mergeAudioWithVideo($pathToAudioFile);
-		if (!$success) {
+		if (!$this->mergeAudioWithVideo($pathToMIDIFile)) {
 			echo "\n<p>The audio could not be merged with the video, due to the following error: <pre>".htmlspecialchars($this->getErrorMessage())."</pre></p>";
 		} else {
 			# Echo HTML5 tag with video file
@@ -56,71 +64,57 @@ class soundtrackGenerator {
 		}
     }
 	
-	
 	/*
-	 * Uses ffmpeg to write new audio on a video
+	 * Set the class properties for default paths
+	 *
 	 */
-	public function mergeAudioWithVideo ($pathToAudioFile) {
-		# Define paths
-        $pathToMusicFile = dirname ($_SERVER['SCRIPT_FILENAME']) . '/output/' . pathinfo ($pathToAudioFile, PATHINFO_FILENAME) . '.wav';
-        $pathToMovieFile = dirname ($_SERVER['SCRIPT_FILENAME']) . '/content/video.mp4';
-        $outputFilepath = dirname ($_SERVER['SCRIPT_FILENAME']) . '/output/finalvideo.mpg';
-
-		# Define command
-        $cmd = "/usr/local/bin/ffmpeg -y -i \"{$pathToMusicFile}\" -i \"{$pathToMovieFile}\" \"{$outputFilepath}\"";
-        
-		# Execute command
-		$exitStatus = $this->execCmd ($cmd);
+	public function setDefaultPaths () {
 		
-		# Deal with error messages
-		if ($exitStatus != 0) {
-            $this->errorMessage = 'The video file could not be rendered, due to an error with ffmpeg.';
-            return false;
-        }
+		$videoFilepath = dirname ($_SERVER['SCRIPT_FILENAME']) . '/content/video.mp4';
+		$outputFolder = dirname ($_SERVER['SCRIPT_FILENAME']) . '/output/';
+		$outputFilepath = $outputFolder . 'finalvideo.mpg';
+		
+		# Set path to original video file
+		if (!$this->setVideoFilepath ($videoFilepath)) {
+			return false;
+		}
+		
+		# Set and check output folder is writeable
+		if (!$this->setOutputFilepath ($outputFolder, $outputFilepath)) {
+			return false;
+		}
 		
 		return true;
 	}
- 
- 
-    /*
-     * Converts a MIDI file to WAV.
-     *
-     * @param str $file Filepath of MIDI file to be converted
-     *
-     * @return bool True if operation succeded, False if error occured.
-     */ 
-    public function convertMIDIToWAV ($file) {
-        # Convert MIDI file to WAV using timidity in shell
-        # Define command
-		$cmd = "/usr/local/bin/timidity -Ow \"{$file}\"";   
-        
-		# Execute command
-		$exitStatus = $this->execCmd ($cmd);
-        
-		# Deal with error messages
-		if ($exitStatus != 0) {
-            #echo nl2br (htmlspecialchars (implode ("\n", $output)));
-            $this->errorMessage = 'The WAV file could not be created, due to an error with the converter.';  
-            return false;
-        }
-		
-        return true;
-    }
-    
-    
-    /*
-     * Generate HTML5 audio tag for audio at a given location
-     *
-     * @param str $location Filename (within running directory) of the audiofile
-     *
-     * @return str HTML code
-     */ 
-    public function getAudioHTMLTag ($location) {
-        $html = "<audio src=\"{$location}\" controls=\"controls\">
-                Your browser does not support the AUDIO element
-                </audio>";    
-        return $html;
-    }
+	
+	/*
+	 * Set class property videoFilepath
+	 *
+	 * @param str $path Path to source video
+	 */
+	public function setVideoFilepath ($path) {
+		$this->videoFilepath = $path;
+		if (!is_file ($this->videoFilepath)) {
+			$this->errorMessage = 'No source video found.';
+			return false;
+		}
+		return true;
+	}
+	
+	/*
+	 * Set class property outputFilepath
+	 *
+	 * @param str $outputFolder Path to output folder
+	 * @param str $outputFilepath Output filepath
+	 */
+	public function setOutputFilepath ($outputFolder, $outputFilepath) {
+		if (!is_writable ($outputFolder)) {
+			$this->errorMessage = "Can't write to output directory.";
+			return false;
+		}
+		$this->outputFilepath = $outputFilepath;
+		return true;
+	}
 	
 	
 	/*
@@ -202,6 +196,90 @@ class soundtrackGenerator {
 		
 		return $finalFormattedTime;	
 	}
+	
+	
+	/* Set class property audioFilepath
+	 *
+	 * @param str $path Path to converted audio file
+	 *
+	 */
+	public function setAudioFilepath ($path) {
+		$this->audioFilepath = $path;
+		if (!is_file ($this->audioFilepath)) {
+			$this->errorMessage = 'No source video found';
+			return false;
+		}
+		return true;
+	}
+	
+	
+	/*
+	 * Uses ffmpeg to write new audio on a video
+	 */
+	public function mergeAudioWithVideo () {
+		# Define command
+        $cmd = "/usr/local/bin/ffmpeg -y -i \"{$this->audioFilepath}\" -i \"{$this->videoFilepath}\" \"{$this->outputFilepath}\"";
+
+		# Execute command
+		$exitStatus = $this->execCmd ($cmd);
+		
+		# Deal with error messages
+		if ($exitStatus != 0) {
+            $this->errorMessage = 'The video file could not be rendered, due to an error with ffmpeg.';
+            return false;
+        }
+		
+		return true;
+	}
+ 
+ 
+    /*
+     * Converts a MIDI file to WAV.
+     *
+     * @param str $file Filepath of MIDI file to be converted
+     *
+     * @return bool True if operation succeded, False if error occured.
+     */ 
+    public function convertMIDIToWAV ($midiFilepath) {
+        # Convert MIDI file to WAV using timidity in shell
+        # Define command
+		$cmd = "/usr/local/bin/timidity -Ow \"{$midiFilepath}\"";   
+        
+		# Execute command
+		$exitStatus = $this->execCmd ($cmd);
+        
+		# Deal with error messages
+		if ($exitStatus != 0) {
+            #echo nl2br (htmlspecialchars (implode ("\n", $output)));
+            $this->errorMessage = 'The WAV file could not be created, due to an error with the converter.';  
+            return false;
+        }
+		
+		# Set $this->audioFilepath
+		$pathToMusicFile = dirname ($_SERVER['SCRIPT_FILENAME']) . '/output/' . pathinfo ($midiFilepath, PATHINFO_FILENAME) . '.wav';
+		
+		if (!$this->setAudioFilepath ($pathToMusicFile)) {
+			$this->errorMessage = 'The converted audio file could not be found.';
+			return false;
+		}
+		
+        return true;
+    }
+    
+    
+    /*
+     * Generate HTML5 audio tag for audio at a given location
+     *
+     * @param str $location Filename (within running directory) of the audiofile
+     *
+     * @return str HTML code
+     */ 
+    public function getAudioHTMLTag ($location) {
+        $html = "<audio src=\"{$location}\" controls=\"controls\">
+                Your browser does not support the AUDIO element
+                </audio>";    
+        return $html;
+    }
 	
 	
 	/*
