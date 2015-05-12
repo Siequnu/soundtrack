@@ -80,6 +80,12 @@ class soundtrackGenerator {
 			return false;
 		}
 		
+		# Check origin video is readable
+		if (!is_readable($this->videoFilepath)) {
+			$this->errorMessage = 'Content video is not readable. Check read permissions.';
+			return false;
+		}
+		
 		# Set and check output folder is writeable
 		if (!$this->setOutputFilepath ($outputFolder, $outputFilepath)) {
 			return false;
