@@ -208,8 +208,8 @@ class soundtrackGenerator {
 	 */
 	public function setAudioFilepath ($path) {
 		$this->audioFilepath = $path;
-		if (!is_file ($this->audioFilepath)) {
-			$this->errorMessage = 'No source video found';
+		if (!is_readable ($this->audioFilepath)) {
+			$this->errorMessage = "Can't read converted audio file. File is not present or check read permissions.";
 			return false;
 		}
 		return true;
