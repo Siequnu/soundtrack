@@ -60,7 +60,7 @@ class soundtrackGenerator {
 			echo "\n<p>The audio could not be merged with the video, due to the following error: <pre>".htmlspecialchars($this->getErrorMessage())."</pre></p>";
 		} else {
 			# Echo HTML5 tag with video file
-			$pathToVideoFile = '/soundtrack/output/finalvideo.mpg';
+			$pathToVideoFile = './output/finalvideo.mpg';
 			echo $this->getVideoHTMLTag ($pathToVideoFile);	
 		}
     }
