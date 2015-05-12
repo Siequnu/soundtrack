@@ -121,6 +121,21 @@ class soundtrackGenerator {
                 </audio>";    
         return $html;
     }
+	
+	
+	/*
+     * Generate HTML5 video tag for video at a given location
+     *
+     * @param str $location Filename (within running directory) of the videofile
+     *
+     * @return str HTML code
+     */ 
+    public function getVideoHTMLTag ($location) {
+        $html = "<video src=\"{$location}\" width=600 controls=\"controls\">
+                Your browser does not support the VIDEO element
+                </video>";    
+        return $html;
+    }
     
 	
 	/*
