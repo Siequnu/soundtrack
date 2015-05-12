@@ -8,6 +8,8 @@ class musicGenerator {
         $this->chordArray = array (
             '0'   => array ('36', '52', '55', '60'),
 			'1'   => array ('38', '53', '57', '60'),
+			'2'   => array ('43', '55', '59', '62'),
+			'3'   => array ('36', '55', '60', '64'),
 		);    
     }
     
