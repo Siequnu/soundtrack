@@ -2,7 +2,7 @@ soundtrack is a smart soundtrack generator. The program analyses a YouTube video
 
 Deployment notes:
 This script needs read and write permissions to the /output and /content directories.
-This script needs ffmpeg and timidity for media conversion.
+This script needs ffmpeg and timidity for media conversion (eg. $ brew install timidity).
 
 Usage indications:
 Main entry to program: index.php. Submit a YouTube video URL in the given form.
