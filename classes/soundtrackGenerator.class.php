@@ -60,7 +60,7 @@ class soundtrackGenerator {
 			echo "\n<p>The audio could not be merged with the video, due to the following error: <pre>".htmlspecialchars($this->getErrorMessage())."</pre></p>";
 		} else {
 			# Echo HTML5 tag with video file
-			$pathToVideoFile = './output/finalvideo.mov';
+			$pathToVideoFile = './output/finalvideo.mp4';
 			echo $this->getVideoHTMLTag ($pathToVideoFile);	
 		}
     }
@@ -72,7 +72,7 @@ class soundtrackGenerator {
 	public function setDefaultPaths ($inputVideoLocation) {
 		
 		$outputFolder = dirname ($_SERVER['SCRIPT_FILENAME']) . '/output/';
-		$outputFilepath = $outputFolder . 'finalvideo.mov';
+		$outputFilepath = $outputFolder . 'finalvideo.mp4';
 		
 		# Set path to original video file
 		if (!$this->setVideoFilepath ($inputVideoLocation)) {
@@ -146,7 +146,7 @@ class soundtrackGenerator {
 	 */
     public function getCutScenes () {
 		# Define command to be run		
-		$cmd = "/usr/local/bin/ffprobe -show_frames -of compact=p=0 -f lavfi \"movie={$this->videoFilepath},select=gt(scene\,0.2)\" > {$this->outputDirectory}scene-changes.txt"; 
+		$cmd = "/usr/local/bin/ffprobe -show_frames -of compact=p=0 -f lavfi \"movie={$this->videoFilepath},select=gt(scene\,0.3)\" > {$this->outputDirectory}scene-changes.txt"; 
 
 		# Execute command
         $exitStatus = $this->execCmd ($cmd);
@@ -220,7 +220,7 @@ class soundtrackGenerator {
 	 */
 	public function mergeAudioWithVideo () {
 		# Define command
-        $cmd = "/usr/local/bin/ffmpeg -y -i \"{$this->audioFilepath}\" -i \"{$this->videoFilepath}\" \"{$this->outputFilepath}\"";
+        $cmd = "/usr/local/bin/ffmpeg -y -i \"{$this->audioFilepath}\" -i \"{$this->videoFilepath}\" -preset veryfast \"{$this->outputFilepath}\"";
 
 		# Execute command
 		$exitStatus = $this->execCmd ($cmd);
