@@ -20,12 +20,12 @@ class soundtrack {
         $this->inputVideoLocation = dirname ($_SERVER['SCRIPT_FILENAME']) . '/content/video.mp4';
                 
         # Generate form to get link to youtube video
-        if (!isSet ($_GET['url'])) {
-            $this->generateForm();
+        if (!$this->formSubmitted) {
+            $formData = $this->generateForm();
 		}
-          
+
 		# Retrieve and assign form data and set videoID
-		$this->assignFormData();
+		$this->assignFormData($formData);
 		
 		# Process submitted URL
 		if ($this->formSubmitted) {
@@ -45,9 +45,9 @@ class soundtrack {
     }
     
     
-	public function assignFormData() {
-		if (isSet($_GET['submiturl']['url'])) {
-			$this->videoID = $_GET['submiturl']['url'];
+	public function assignFormData($formData) {
+		if (!empty($formData['url'])) {
+			$this->videoID = $formData['url'];
 			$this->formSubmitted = true;
 		}	
 	}
@@ -86,7 +86,6 @@ class soundtrack {
         # Create a form instance 
         $form = new form (array (
             'get'                    => 'true',
-            'name'                   => 'submiturl',
             'div'                    => 'form-download',
             'submitButtonText'       => 'Submit URL',
 			'formCompleteText'       => false,
@@ -109,7 +108,9 @@ class soundtrack {
         'regexp'				=> '',
         ));
         
-        $form->process ();
+		# Process form and return result
+        $result = $form->process ();
+		return $result;
     }
     
 }
