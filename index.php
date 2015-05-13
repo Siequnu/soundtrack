@@ -1,7 +1,7 @@
 <?php
 
-include_once 'classes/soundtrackGenerator.class.php';
-$soundtrackGenerator = new soundtrackGenerator;
-$soundtrackGenerator->getSoundtrack();
+include_once 'classes/soundtrack.class.php';
+$soundtrack = new soundtrack;
+$soundtrack->main();
 
 ?>

@@ -18,12 +18,12 @@ class soundtrackGenerator {
 	public function getErrorMessage () {return $this->errorMessage;}
 	
 	
-    public function getSoundtrack () {  
+    public function getSoundtrack ($inputVideoLocation) {  
 		# Extend time limit from default 30: ffmpeg takes a while for longer video files
         set_time_limit (120);
         
 		# Set videoFilepath and check $outputFilepath is writeable.
-		if (!$this->setDefaultPaths()) {
+		if (!$this->setDefaultPaths($inputVideoLocation)) {
 			echo "Script could not run, due to the following error: <pre>".htmlspecialchars($this->getErrorMessage())."</pre></p>";die;
 		}
 		
@@ -60,7 +60,7 @@ class soundtrackGenerator {
 			echo "\n<p>The audio could not be merged with the video, due to the following error: <pre>".htmlspecialchars($this->getErrorMessage())."</pre></p>";
 		} else {
 			# Echo HTML5 tag with video file
-			$pathToVideoFile = './output/finalvideo.mpg';
+			$pathToVideoFile = './output/finalvideo.mov';
 			echo $this->getVideoHTMLTag ($pathToVideoFile);	
 		}
     }
@@ -69,14 +69,13 @@ class soundtrackGenerator {
 	 * Set the class properties for default paths
 	 *
 	 */
-	public function setDefaultPaths () {
+	public function setDefaultPaths ($inputVideoLocation) {
 		
-		$videoFilepath = dirname ($_SERVER['SCRIPT_FILENAME']) . '/content/video.mp4';
 		$outputFolder = dirname ($_SERVER['SCRIPT_FILENAME']) . '/output/';
-		$outputFilepath = $outputFolder . 'finalvideo.mpg';
+		$outputFilepath = $outputFolder . 'finalvideo.mov';
 		
 		# Set path to original video file
-		if (!$this->setVideoFilepath ($videoFilepath)) {
+		if (!$this->setVideoFilepath ($inputVideoLocation)) {
 			return false;
 		}
 		
