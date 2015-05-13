@@ -220,7 +220,7 @@ class soundtrackGenerator {
 	 */
 	public function mergeAudioWithVideo () {
 		# Define command
-        $cmd = "/usr/local/bin/ffmpeg -y -i \"{$this->audioFilepath}\" -i \"{$this->videoFilepath}\" -preset veryfast \"{$this->outputFilepath}\"";
+        $cmd = "/usr/local/bin/ffmpeg -y -i \"{$this->audioFilepath}\" -i \"{$this->videoFilepath}\" -preset ultrafast \"{$this->outputFilepath}\"";
 
 		# Execute command
 		$exitStatus = $this->execCmd ($cmd);
