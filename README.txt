@@ -10,3 +10,6 @@ Main entry to program: index.php. Submit a YouTube video URL in the given form. 
 After successfully running the program, finalvideo.mp4 will be written in the /output directory, combining the original video with the new soundtrack. The browser will attempt to play back the video. 
 
 As this is a proof of concept, the cut points will be marked with random chord. 
+
+Known issues:
+Monetised YouTube videos might attempt to show an ad at the start. In this case, the script will be unable to process the requested video. Try another video.

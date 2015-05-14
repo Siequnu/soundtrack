@@ -20,7 +20,7 @@ class soundtrackGenerator {
 	
     public function getSoundtrack ($inputVideoLocation) {  
 		# Extend time limit from default 30: ffmpeg takes a while for longer video files
-        set_time_limit (120);
+        set_time_limit (300);
         
 		# Set videoFilepath and check $outputFilepath is writeable.
 		if (!$this->setDefaultPaths($inputVideoLocation)) {

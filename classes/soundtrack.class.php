@@ -16,7 +16,7 @@ class soundtrack {
     
 	
     public function main () {        
-        # Get input video location
+        # Set input video location
         $this->inputVideoLocation = dirname ($_SERVER['SCRIPT_FILENAME']) . '/content/video.mp4';
                 
         # Generate form to get link to youtube video
@@ -55,7 +55,7 @@ class soundtrack {
     public function downloadVideo($url, $file_target) {  
         # Check for read/write permission for URL and target file
         if (!$rh = fopen($url, 'rb')) {
-            $this->errorMessage = 'Can not read origin url.';
+            $this->errorMessage = "Can not read origin url. \nIf HTTP/1.1 403 Forbidden error was shown, YouTube might be trying to display an Ad before the video. \nTry again with a different video.";
             return false;
         };
         
