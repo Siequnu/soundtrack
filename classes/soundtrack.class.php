@@ -85,7 +85,6 @@ class soundtrack {
         
         # Create a form instance 
         $form = new form (array (
-            'get'                    => 'true',
             'div'                    => 'form-download',
             'submitButtonText'       => 'Submit URL',
 			'formCompleteText'       => false,

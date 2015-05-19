@@ -29,7 +29,7 @@ class soundtrackGenerator {
 		
         # Get array with cutscene timings from video
         $sceneChangeTimings = $this->getCutScenes();
-        
+
 		# Deal with errors
 		if (!$sceneChangeTimings)  {
 			echo "Cut scene creation failed, due to the following error: <pre>".htmlspecialchars($this->getErrorMessage())."</pre></p>"; die;
@@ -146,7 +146,7 @@ class soundtrackGenerator {
 	 */
     public function getCutScenes () {
 		# Define command to be run		
-		$cmd = "/usr/local/bin/ffprobe -show_frames -of compact=p=0 -f lavfi \"movie={$this->videoFilepath},select=gt(scene\,0.3)\" > {$this->outputDirectory}scene-changes.txt"; 
+		$cmd = "ffprobe -show_frames -of compact=p=0 -f lavfi \"movie={$this->videoFilepath},select=gt(scene\,0.3)\" > {$this->outputDirectory}scene-changes.txt"; 
 
 		# Execute command
         $exitStatus = $this->execCmd ($cmd);
@@ -220,7 +220,7 @@ class soundtrackGenerator {
 	 */
 	public function mergeAudioWithVideo () {
 		# Define command
-        $cmd = "/usr/local/bin/ffmpeg -y -i \"{$this->audioFilepath}\" -i \"{$this->videoFilepath}\" -preset ultrafast \"{$this->outputFilepath}\"";
+        $cmd = "ffmpeg -y -i \"{$this->audioFilepath}\" -i \"{$this->videoFilepath}\" -preset ultrafast \"{$this->outputFilepath}\"";
 
 		# Execute command
 		$exitStatus = $this->execCmd ($cmd);
@@ -245,7 +245,7 @@ class soundtrackGenerator {
     public function convertMIDIToWAV ($midiFilepath) {
         # Convert MIDI file to WAV using timidity in shell
         # Define command
-		$cmd = "/usr/local/bin/timidity -Ow \"{$midiFilepath}\"";   
+		$cmd = "timidity -Ow \"{$midiFilepath}\"";   
         
 		# Execute command
 		$exitStatus = $this->execCmd ($cmd);
@@ -292,9 +292,10 @@ class soundtrackGenerator {
 	 * @return bool The exit status
 	 */
 	private function execCmd ($cmd) {
-		if (substr(php_uname(), 0, 7) == "Windows"){ 
-			pclose(popen("start /B ". $cmd, "r"));  
+		if (substr(php_uname(), 0, 5) == "Linux"){ 
+			exec ($cmd, $output, $exitStatus);
 		} else { 
+        $cmd = '/usr/local/bin/' . $cmd;
         exec ($cmd, $output, $exitStatus);   
 		}		
 		return $exitStatus;
