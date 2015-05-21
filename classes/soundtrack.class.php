@@ -101,7 +101,7 @@ class soundtrack {
         'output'				=> array (),
         'size'					=> 32,
         'maxlength'				=> '',
-        'default'				=> 'P6JfInyQI9Q',
+        'default'				=> 'l6MY4iQFvUo',
         'regexp'				=> '',
         ));
         
