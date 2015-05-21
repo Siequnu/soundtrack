@@ -31,7 +31,7 @@ class soundtrack {
 		if ($this->formSubmitted) {
 			# Build URL and path to target video file
 			$url = 'http://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']) . '/lib/getvideo/getvideo.php?videoid=' . $this->videoID . '&format=ipad';	
-			$filetarget = dirname ($_SERVER['SCRIPT_FILENAME']) . '/content/video.mp4';
+			$filetarget = dirname ($_SERVER['SCRIPT_FILENAME']) . '/content/';
 	
 			# Download video and deal with errors 
 			if (!$this->downloadVideo($url, $filetarget)) {
@@ -53,26 +53,21 @@ class soundtrack {
 	}
 	
     public function downloadVideo($url, $file_target) {  
-        # Check for read/write permission for URL and target file
-        if (!$rh = fopen($url, 'rb')) {
-            $this->errorMessage = "Can not read origin url. \nIf HTTP/1.1 403 Forbidden error was shown, YouTube might be trying to display an Ad before the video. \nTry again with a different video.";
-            return false;
-        };
-        
-        if (!$wh = fopen($file_target, 'wb')) {
-            $this->errorMessage = 'Can not write video to target folder.';
-            return false;   
-        };
-        
-        while (!feof($rh)) {
-            if (fwrite($wh, fread($rh, 1024)) === FALSE) {
-                   $this->errorMessage = 'Download error: Cannot write to file ('.$file_target.')';
-                   return false;
-               }
-        }
-        
-        fclose($rh);
-        fclose($wh);
+        # Check if target directory is writeable
+		if (!is_writeable($file_target)) {
+			$this->errorMessage = 'Can not write to output directory.';
+			return false;
+		}
+		
+		$file_target = 'content/video.mp4';
+		
+		# Download file
+		$cmd = "curl -L -o {$file_target} '{$url}'";
+		exec ($cmd, $output, $exitStatus);
+		if (!$exitStatus === 0) {
+			$this->errorMessage = 'Download failed due to an error with cURL.';
+			return false;
+		}
         return true;
     }
     
