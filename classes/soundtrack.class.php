@@ -91,13 +91,14 @@ class soundtrack {
         ));
         
         $form->heading (2, 'YouTube Video Soundtrack Creation');
-        $form->heading ('p', 'Please enter the video ID in the box below.');
+        $form->heading ('p', 'This is a proof of concept. A chord will play at each scene change. Processing long videos might take some time.');
+        $form->heading ('p', '');
         
-        # Create a standard input box
+		# Create a standard input box
         $form->input (array (
         'name'					=> 'url',
-        'title'					=> 'YouTube URL',
-        'description'			=> '',
+        'title'					=> 'YouTube video ID',
+        'description'			=> 'Eg.: http://www.youtube.com/watch?v=Ay8G3t8xp7s  ->  Ay8G3t8xp7s',
         'output'				=> array (),
         'size'					=> 32,
         'maxlength'				=> '',
@@ -107,6 +108,8 @@ class soundtrack {
         
 		# Process form and return result
         $result = $form->process ();
+		
+		
 		return $result;
     }
     
