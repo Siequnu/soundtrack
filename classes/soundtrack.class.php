@@ -28,11 +28,14 @@ class soundtrack {
 			# Retrieve and assign form data and set videoID
 			$this->assignFormData($formData);
 			
-			# Set input video location
-			$this->inputVideoLocation = dirname ($_SERVER['SCRIPT_FILENAME']) . '/content/' . $this->videoID . '-video.mp4';
+			 # Set unique input video location
+			$dir = dirname ($_SERVER['SCRIPT_FILENAME']) . '/content/';
+			$this->inputVideoLocation = tempnam ($dir, $this->videoID . '-');
+			rename ($this->inputVideoLocation, $this->inputVideoLocation . '.mp4' );
+			$this->inputVideoLocation = $this->inputVideoLocation . '.mp4';
 			
 			# Build URL and path to target video file
-			$url = 'http://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']) . '/lib/getvideo/getvideo.php?videoid=' . $this->videoID . '&format=ipad';	
+			$url = 'http://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']) . '/lib/getvideo/getvideo.php?videoid=' . $this->videoID . '&format=18';	
 			$filetarget = dirname ($_SERVER['SCRIPT_FILENAME']) . '/content/';
 		
 			# Download video and deal with errors 
@@ -42,6 +45,10 @@ class soundtrack {
 			
 			# Send video to soundtrack generator
 			$this->soundtrackGenerator->getSoundtrack($this->inputVideoLocation);
+			
+			# Clear up data
+			$this->clearUp ();
+			
 		}
 		
     }
@@ -62,7 +69,14 @@ class soundtrack {
 			return false;
 		}
 		
-		$file_target = 'content/' . $this->videoID . '-video.mp4';
+		# Get unique filename from path string
+		$filePathExploded = explode ('/', $this->inputVideoLocation);
+		end ($filePathExploded);
+		$endKey = key ($filePathExploded);
+		$this->uniqueFileName = $filePathExploded[$endKey];
+		
+		# Set local filepath for curl
+		$file_target = 'content/' . $this->uniqueFileName;
 		
 		# Download file
 		$cmd = "curl -L -o {$file_target} '{$url}'";
@@ -74,6 +88,16 @@ class soundtrack {
         return true;
     }
     
+	public function clearUp () {
+		# Delete scene changes file
+		unlink ($this->soundtrackGenerator->outputFilepath . '-scene-changes.txt');
+		# Delete midi file
+		unlink ($this->soundtrackGenerator->MIDIFilepath);
+		# Delete wav file
+		unlink ($this->soundtrackGenerator->WAVFilepath);
+		# Delete source video file
+		unlink ($this->inputVideoLocation);
+	}
     
     public function generateForm () {
         # Load the form module 

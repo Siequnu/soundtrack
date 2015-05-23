@@ -3,11 +3,11 @@
 class soundtrackGenerator {
     
 	
-	private $videoFilepath;
-	private $audioFilepath;
-	private $outputDirectory;
-	private $outputFilepath;
-	private $architecture;
+	public $videoFilepath;
+	public $WAVFilepath;
+	public $MIDIFilepath;
+	public $outputDirectory;
+	public $outputFilepath;
 	public $videoID;
 	
 			
@@ -52,7 +52,7 @@ class soundtrackGenerator {
             return false;
         } 
         
-        # Convert MIDI file to WAV and set $this->audioFilepath
+        # Convert MIDI file to WAV and set $this->WAVFilepath
 		if (!$this->convertMIDIToWAV ($pathToMIDIFile)) {
 			echo "\n<p>The audio file could not be created, due to the following error: <pre>".htmlspecialchars($this->getErrorMessage())."</pre></p>";
 		}
@@ -61,9 +61,14 @@ class soundtrackGenerator {
 		if (!$this->mergeAudioWithVideo($pathToMIDIFile)) {
 			echo "\n<p>The audio could not be merged with the video, due to the following error: <pre>".htmlspecialchars($this->getErrorMessage())."</pre></p>";
 		} else {
+			# Get video location from videoTools
+			$explodedFilepath = explode ('/', $this->outputFilepath);
+			end ($explodedFilepath);
+			$finalVideoFilename = $explodedFilepath[key($explodedFilepath)];
+
 			# Echo HTML5 tag with video file
-			$pathToVideoFile = './output/' . $this->videoID . '-finalvideo.mp4';
-			echo $this->getVideoHTMLTag ($pathToVideoFile);	
+			$pathToVideoFile = './output/' . $finalVideoFilename;
+			echo $this->getVideoHTMLTag ($pathToVideoFile);
 		}
     }
 	
@@ -73,8 +78,15 @@ class soundtrackGenerator {
 	 */
 	public function setDefaultPaths ($inputVideoLocation) {
 		
+		# Create output file and set permissions
+		$originalUmask = umask (0000);
 		$outputFolder = dirname ($_SERVER['SCRIPT_FILENAME']) . '/output/';
-		$outputFilepath = $outputFolder . $this->videoID . '-finalvideo.mp4';
+		$outputFilepath = tempnam ($outputFolder, $this->videoID . '-');
+		umask ($originalUmask);
+		rename ($outputFilepath, $outputFilepath . '.mp4');
+		$outputFilepath = $outputFilepath . '.mp4';
+		chmod ($outputFilepath, 0775); 
+		
 		
 		# Set path to original video file
 		if (!$this->setVideoFilepath ($inputVideoLocation)) {
@@ -147,9 +159,12 @@ class soundtrackGenerator {
 	 * @return array Array with timings
 	 */
     public function getCutScenes () {
+		# Get unique name based on name of downloaded video
+		
+		
 		# Define command to be run		
-		$cmd = "ffprobe -show_frames -of compact=p=0 -f lavfi \"movie={$this->videoFilepath},select=gt(scene\,0.4)\" > {$this->outputDirectory}{$this->videoID}-scene-changes.txt"; 
-		# Execute command
+		$cmd = "ffprobe -show_frames -of compact=p=0 -f lavfi \"movie={$this->videoFilepath},select=gt(scene\,0.4)\" > {$this->outputFilepath}-scene-changes.txt"; 
+		# Execute command	
         $exitStatus = $this->execCmd ($cmd);
 	
 		# Handle errors
@@ -164,7 +179,7 @@ class soundtrackGenerator {
 		}
 		
 		# Parse and return cut scene file
-		$sceneChangeFileLocation = dirname ($_SERVER['SCRIPT_FILENAME']) . '/output/' . $this->videoID . '-scene-changes.txt';
+		$sceneChangeFileLocation = $this->outputFilepath . '-scene-changes.txt';
 		return $this->parseCutSceneFile($sceneChangeFileLocation);
 		
 	}
@@ -211,9 +226,9 @@ class soundtrackGenerator {
 	 * @param str $path Path to converted audio file
 	 *
 	 */
-	public function setAudioFilepath ($path) {
-		$this->audioFilepath = $path;
-		if (!is_readable ($this->audioFilepath)) {
+	public function setWAVFilepath ($path) {
+		$this->WAVFilepath = $path;
+		if (!is_readable ($this->WAVFilepath)) {
 			$this->errorMessage = "Can't read converted audio file. File is not present or check read permissions.";
 			return false;
 		}
@@ -226,7 +241,7 @@ class soundtrackGenerator {
 	 */
 	public function mergeAudioWithVideo () {
 		# Define command
-        $cmd = "ffmpeg -y -i \"{$this->audioFilepath}\" -i \"{$this->videoFilepath}\" -preset ultrafast \"{$this->outputFilepath}\"";
+        $cmd = "ffmpeg -y -i \"{$this->WAVFilepath}\" -i \"{$this->videoFilepath}\" -preset ultrafast \"{$this->outputFilepath}\"";
 
 		$exitStatus = $this->execCmd ($cmd);
 	
@@ -255,6 +270,10 @@ class soundtrackGenerator {
      */ 
     public function convertMIDIToWAV ($midiFilepath) {
         # Convert MIDI file to WAV using timidity in shell
+        
+		# Define path to MIDIFile to aid cleanup later
+		$this->MIDIFilepath = $midiFilepath;
+		
         # Define command
 		$cmd = "timidity -Ow \"{$midiFilepath}\"";   
         
@@ -269,31 +288,16 @@ class soundtrackGenerator {
         }
 		
 		# Set $this->audioFilepath
-		$pathToMusicFile = dirname ($_SERVER['SCRIPT_FILENAME']) . '/output/' . pathinfo ($midiFilepath, PATHINFO_FILENAME) . '.wav';
+		$pathToWAVFile = dirname ($_SERVER['SCRIPT_FILENAME']) . '/output/' . pathinfo ($midiFilepath, PATHINFO_FILENAME) . '.wav';
 		
-		if (!$this->setAudioFilepath ($pathToMusicFile)) {
-			$this->errorMessage = 'The converted audio file could not be found.';
+		if (!$this->setWAVFilepath ($pathToWAVFile)) {
+			$this->errorMessage = 'The converted WAV file could not be found.';
 			return false;
 		}
 		
         return true;
     }
     
-    
-    /*
-     * Generate HTML5 audio tag for audio at a given location
-     *
-     * @param str $location Filename (within running directory) of the audiofile
-     *
-     * @return str HTML code
-     */ 
-    public function getAudioHTMLTag ($location) {
-        $html = "<audio src=\"{$location}\" controls=\"controls\">
-                Your browser does not support the AUDIO element
-                </audio>";    
-        return $html;
-    }
-	
 	
 	/*
 	 * Executes a command on a binary in the index.php directory and returns an exit status
